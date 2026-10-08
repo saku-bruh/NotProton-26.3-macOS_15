@@ -46,12 +46,10 @@ jobs:
       - name: Generate the appcast
         env:
           RELEASE_NOTES: ${{ inputs.release_notes }}
-          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
           VERSION: ${{ inputs.version }}
         run: |
           printf '%s\n' "$RELEASE_NOTES" > release/NotProton.txt
-          printf '%s' "$SPARKLE_PRIVATE_KEY" | app/.build/artifacts/sparkle/Sparkle/bin/generate_appcast \
-            --ed-key-file - \
+          app/.build/artifacts/sparkle/Sparkle/bin/generate_appcast \
             --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/" \
             --embed-release-notes \
             release
