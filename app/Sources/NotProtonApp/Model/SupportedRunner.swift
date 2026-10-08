@@ -94,6 +94,20 @@ enum SupportedRunners {
                 .aarch64Windows: "89e4c9e7f0a0a60462c0231ec393168f8bdb04bc8ea1dc22211f25bf3ff2c6b3",
             ]
         ),
+        RunnerBuild(
+            bundleVersion: "26.3.0.39832",
+            releaseVersion: "26.3",
+            flavor: nil,
+            loaderSHA256: "b5edb0444b5b25ba0aa5091be1cba11680130895c338cc8044101bce98802a63",
+            cleanNtdll: [
+                .x86_64Windows: "6dff64c00793ce92124f1316985c63783f539f26b392975c70f57637458d2387",
+                .i386Windows: "2c60ee6b00dd13b7f6cb11017778a041ba6a321eaea194f1fa0dca7eab8403e2",
+            ],
+            patchedNtdll: [
+                .x86_64Windows: "ab892dfac85b11490eeb988d1b4c8700058c626b2b8de0fc84e012b5c83846ee",
+                .i386Windows: "4eae5dc9771c79f929e4a2ac1c89f264696a6dc275b7cd950cbd7261b1d0f56f",
+            ]
+        ),
     ]
 
     static func build(loaderSHA256 hash: String) -> RunnerBuild? {

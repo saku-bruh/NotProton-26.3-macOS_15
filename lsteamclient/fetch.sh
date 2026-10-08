@@ -93,3 +93,34 @@ echo "$authored" | while IFS= read -r f; do
 done
 
 echo "==> assembled $TREE with $(echo "$authored" | LC_ALL=C grep -c .) authored files over it"
+
+makefile="$TREE/Makefile.in"
+split="$TREE/Makefile.in.split"
+awk '
+/^SOURCES[[:space:]]*=/ { in_sources = 1; print; next }
+in_sources && index($0, ".cpp") {
+	if (!unix_sources) {
+		pending = substr(pending, 1, length(pending) - 2)
+		print pending
+		print ""
+		print "UNIX_SOURCES = \\"
+		unix_sources = 1
+	}
+	print
+	if (substr($0, length($0), 1) != "\\") in_sources = 0
+	next
+}
+in_sources {
+	if (pending != "") print pending
+	pending = $0
+	if (substr($0, length($0), 1) != "\\") {
+		print pending
+		pending = ""
+		in_sources = 0
+	}
+	next
+}
+{ print }
+END { if (pending != "") print pending }
+' "$makefile" > "$split"
+mv "$split" "$makefile"

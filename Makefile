@@ -279,7 +279,7 @@ panel-behavior:
 	node $(PANEL_TESTS)/switching.js $(OUT_DIR)/panel-emit && \
 	echo "==> panel behavior: renders as expected, no stale arguments"
 
-CX_ROOT ?= /Applications/CrossOver Preview.app
+CX_ROOT ?= /Applications/CrossOver.app
 
 ntdll-resolve:
 	@if [ ! -f ntdll-patch/resolve.py ]; then \
@@ -446,9 +446,9 @@ deploy: $(TARGET) dylib-install sigdb-install helpers-install
 		echo "==> warning: launching it reverts this deploy, so rebuild it with 'make app'"; \
 	done
 
-WINE_BUILD := scratch/wine-build-dual
+WINE_BUILD := scratch/wine-build-11.0
 
-WINE_BUILD_ARM64 := scratch/wine-build-arm64
+WINE_BUILD_ARM64 := scratch/wine-build-arm64-11.0
 
 BRIDGE_FILES := \
 	$(WINE_BUILD)/programs/steam.exe/x86_64-windows/steam.exe:steam.exe \

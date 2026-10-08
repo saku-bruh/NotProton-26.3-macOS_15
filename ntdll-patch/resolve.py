@@ -80,6 +80,21 @@ PINNED = {
          'exports': {'LdrGetDllHandle': 0x18004390c, 'LdrLoadDll': 0x180041344,
                      'NtProtectVirtualMemory': 0x180067050, 'NtOpenFile': 0x180066cb0,
                      'NtReadFile': 0x180066710, 'NtClose': 0x180066830}},
+    '6dff64c00793ce92124f1316985c63783f539f26b392975c70f57637458d2387':
+        {'hookRVA': 0x44972, 'stolen': '4883bc24f000000000', 'caveRVA': 0xae000,
+         'caveSize': 4096, 'resume': 0x4497b, 'wm': 'r14', 'load_path': 0xd0,
+         'payload': '32ce53264d2fd4db676ba4ac3fc6ee9faee57fbcd2ec6950c0281db3a50abae7',
+         'exports': {'LdrGetDllHandle': 0x170014bc0, 'LdrLoadDll': 0x170015680,
+                     'NtProtectVirtualMemory': 0x17000f380, 'NtOpenFile': 0x17000efe0,
+                     'NtReadFile': 0x17000ea40, 'NtClose': 0x17000eb60}},
+    '2c60ee6b00dd13b7f6cb11017778a041ba6a321eaea194f1fa0dca7eab8403e2':
+        {'hookRVA': 0x43b40, 'stolen': 'f645c0017526', 'caveRVA': 0xaa000,
+         'caveSize': 4096, 'resume': 0x43b46, 'wm': 'esi', 'load_path': -0x54,
+         'flags_mask': 1,
+         'payload': '64ef95e7da90673ac7c0034c4b2245df50d6fe1fcf91659ad395ebadf4129193',
+         'exports': {'LdrGetDllHandle': 0x7bc12c60, 'LdrLoadDll': 0x7bc13750,
+                     'NtProtectVirtualMemory': 0x7bc0d584, 'NtOpenFile': 0x7bc0d3b4,
+                     'NtReadFile': 0x7bc0d0e4, 'NtClose': 0x7bc0d174}},
 }
 EXPORTS = ['LdrGetDllHandle', 'LdrLoadDll', 'NtProtectVirtualMemory',
            'NtOpenFile', 'NtReadFile', 'NtClose']
@@ -326,13 +341,18 @@ def resolve_i386(pe):
 
     # The module flags are tested for bit 2 just above. Either the value is still in memory
     # or the compiler loaded it first, in which case that load starts the hook.
-    gate = None
+    gate, flags_mask = None, None
     for k in range(anchor - 1, max(anchor - 24, 0), -1):
         i = body[k]
-        if i.mnemonic == 'test' and i.operands and i.operands[-1].type == X86.X86_OP_IMM \
-                and i.operands[-1].imm == 2:
-            gate = k
-            break
+        if i.mnemonic != 'test' or not i.operands or i.operands[-1].type != X86.X86_OP_IMM:
+            continue
+        if i.operands[-1].imm not in (1, 2) or not any(
+                op.type == X86.X86_OP_MEM and i.reg_name(op.mem.base) == 'ebp'
+                for op in i.operands):
+            continue
+        gate = k
+        flags_mask = i.operands[-1].imm
+        break
     if gate is None:
         raise SystemExit(f"{pe.path}: no module-flags gate above the MODREF flag test")
     # If the test uses a register, the flags were already loaded before the hook site.
@@ -386,7 +406,7 @@ def resolve_i386(pe):
             'insn': ' ; '.join(f"{i.mnemonic} {i.op_str}" for i in taken),
             'load_path': load_path, 'skip': skip, 'stole_branch': stole_branch,
             'stolen_head': b''.join(i.bytes for i in (taken[:-1] if stole_branch else taken)).hex(),
-            'flags_slot': flags_slot}
+            'flags_slot': flags_slot, 'flags_mask': flags_mask}
 
 
 def aarch64_walk(md, text, tv):
@@ -637,6 +657,8 @@ def report(path):
             slot = ((lambda v: f"{frame}+{v:#x}") if machine == 0x8664
                     else (lambda v: f"{frame}{v:+#x}"))
             line('load_path', s['load_path'], 'load_path', fmt=slot, want=want)
+        if s.get('flags_mask') is not None:
+            line('flags_mask', s['flags_mask'], 'flags_mask', fmt=lambda v: f"{v:#x}")
     line('caveRVA', r['caveRVA'], 'caveRVA')
     line('caveSize', r['caveSize'], 'caveSize', fmt=str)
     need = PAYLOAD[r['machine']]
@@ -716,6 +738,7 @@ def shell_vars(path):
         out['NP_STOLEN_HEAD_BYTES'] = ','.join(
             f"0x{b:02x}" for b in bytes.fromhex(r['stolen_head']))
         out['NP_FLAGS_SLOT'] = ('%#x' if r['flags_slot'] >= 0 else '-%#x') % abs(r['flags_slot'])
+        out['NP_FLAGS_MASK'] = f"{r['flags_mask']:#x}"
 
     for n, s in enumerate(r.get('sites') or [], 1):
         out[f'NP_HOOK_RVA_{n}'] = f"{s['hookRVA']:#x}"

@@ -1,8 +1,6 @@
 #include "unix_private.h"
 
-#if 0
 #pragma makedep unix
-#endif
 
 #include <unordered_map>
 

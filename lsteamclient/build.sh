@@ -47,7 +47,7 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 repo=$(cd "$here/.." && pwd)
 
-WINE_BUILD=${WINE_BUILD:-$repo/scratch/wine-build-dual}
+WINE_BUILD=${WINE_BUILD:-$repo/scratch/wine-build-11.0}
 # Mach-O spells the arm64 arch arm64 and wine spells its directory aarch64-unix, so
 # both names are kept rather than derived from each other at every use.
 UNIX_ARCH=${UNIX_ARCH:-x86_64}
@@ -58,7 +58,7 @@ case "$UNIX_ARCH" in
 esac
 # Relative because it lands in the debug info. Keep the default sibling layout so
 # a rebuild stays comparable to the shipped binary.
-WINE_SRC_REL=${WINE_SRC_REL:-../wine}
+WINE_SRC_REL=${WINE_SRC_REL:-../wine-11.0}
 # The complete tree, unlike $here, which holds only the authored files.
 TREE=${TREE:-$repo/build/lsteamclient}
 # The cloned runner, not the user's installed CrossOver. --install writes into this
@@ -142,9 +142,9 @@ if [ "$do_unix" -eq 1 ]; then
 
 	objs=$(sed -n 's/^[[:space:]]*\([A-Za-z0-9_]*\.cpp\)[[:space:]]*\\*[[:space:]]*$/\1/p' "$TREE/Makefile.in")
 	count=$(echo "$objs" | wc -l | tr -d ' ')
-	echo "==> unix half: $count sources from Makefile.in SOURCES"
+	echo "==> unix half: $count sources from Makefile.in UNIX_SOURCES"
 
-	CXXFLAGS="-arch $UNIX_ARCH -I$dll -I$src -Iinclude -I$WINE_SRC_REL/include \
+	CXXFLAGS="-include array -arch $UNIX_ARCH -I$dll -I$src -Iinclude -I$WINE_SRC_REL/include \
 -D__WINESRC__ -DSTEAM_API_EXPORTS -Dprivate=public -Dprotected=public -DWINE_UNIX_LIB \
 -fPIC -fasynchronous-unwind-tables -g -O2"
 

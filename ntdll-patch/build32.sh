@@ -53,6 +53,9 @@ echo "  cave $NP_CAVE_RVA fill $NP_FILL, payload at $NP_PAYLOAD_RVA, room $NP_CA
 echo "  hook $NP_HOOK_RVA stolen $NP_STOLEN, wm $NP_WM, load_path ebp$NP_LOAD_PATH"
 
 app_copy=../app/Sources/NotProtonApp/Resources/$out
+if [ "$variant" = rosetta ]; then
+    app_copy=../app/Sources/NotProtonApp/Resources/detour32.bin
+fi
 if [ -f "$app_copy" ] && ! cmp -s "$out" "$app_copy"; then
   echo "warning: $app_copy is stale" >&2
   echo "         cp $out $app_copy" >&2

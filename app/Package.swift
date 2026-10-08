@@ -34,6 +34,8 @@ let package = Package(
                 .copy("Resources/detour32-41069.bin"),
                 .copy("Resources/detour32-fex-41069.bin"),
                 .copy("Resources/detour64-fex-41069.bin"),
+                .copy("Resources/detour2-26.3.bin"),
+                .copy("Resources/detour32-26.3.bin"),
             ],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),

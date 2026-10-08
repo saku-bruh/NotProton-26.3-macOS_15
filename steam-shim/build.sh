@@ -24,11 +24,13 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 repo=$(cd "$here/.." && pwd)
 
-WINE_BUILD=${WINE_BUILD:-$repo/scratch/wine-build-dual}
+WINE_BUILD=${WINE_BUILD:-$repo/scratch/wine-build-11.0}
 # Relative because it lands in the debug info. Keep the default sibling layout so
 # a rebuild stays comparable to the shipped binary.
-WINE_SRC_REL=${WINE_SRC_REL:-../wine}
+WINE_SRC_REL=${WINE_SRC_REL:-../wine-11.0}
 BRIDGE_DIR=${BRIDGE_DIR:-$HOME/Library/Application Support/notproton/bridge}
+PREBUILT="$here/prebuilt/steam.exe"
+PREBUILT_SHA256=778821b6551fc52aa9fd1c28095d73d5a58d72060af5745b261203bbb7eacd09
 
 install=0
 [ "${1:-}" = "--install" ] && install=1
@@ -36,6 +38,18 @@ install=0
 prog=programs/steam.exe
 out=$prog/x86_64-windows/steam.exe
 
+cd "$WINE_BUILD"
+
+if [ -f "$PREBUILT" ] && [ "${STEAM_SHIM_REBUILD:-0}" != 1 ]; then
+	got=$(shasum -a 256 "$PREBUILT" | awk '{print $1}')
+	[ "$got" = "$PREBUILT_SHA256" ] || {
+		echo "==> prebuilt steam.exe hash mismatch: $got" >&2
+		exit 1
+	}
+	mkdir -p "$(dirname "$out")"
+	cp -f "$PREBUILT" "$out"
+	echo "==> staged hash-pinned x86_64 Steam shim"
+else
 if [ ! -d "$WINE_BUILD/$prog" ]; then
 	echo "==> no wine build tree at $WINE_BUILD/$prog"
 	echo "    run bridge/setup-wine-tree.sh to clone and configure it"
@@ -71,6 +85,7 @@ fi
 
 echo "==> building $out"
 make "$out" >/dev/null
+fi
 
 size=$(stat -f %z "$out")
 # shellcheck disable=SC2046

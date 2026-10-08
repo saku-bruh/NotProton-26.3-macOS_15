@@ -326,7 +326,7 @@ struct NtdllPatcherTests {
     // apply32.py produced, which SupportedRunners records. Needs an unpatched CrossOver.
     @Test("Patching the unpatched ntdll reproduces the recorded hashes")
     func realNtdllReproducesRecordedHashes() throws {
-        let root = URL(filePath: "/Applications/CrossOver Preview.app/Contents/SharedSupport/CrossOver")
+        let root = URL(filePath: "/Applications/CrossOver.app/Contents/SharedSupport/CrossOver")
         guard FileManager.default.fileExists(atPath: root.path(percentEncoded: false)),
               let installed = Digest.sha256IfPresent(CrossOverSource.unixLoader(inRoot: root)),
               let build = SupportedRunners.build(loaderSHA256: installed)

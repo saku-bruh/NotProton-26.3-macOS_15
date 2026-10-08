@@ -7,8 +7,8 @@
 # and the steam.exe shim are built in a wine source tree and staged into the bridge
 # unsigned.
 #
-# The base is stock Wine 11.15, the version the CrossOver runtime is built from
-# (wine-11.15-8895-g32f409fef6a). ntdll from a different vintage speaks a different
+# The base is stock Wine 11.0, the version the CrossOver 26.3 runtime is built from
+# (wine-11.0-8726-g2e2f5fca349). ntdll from a different vintage speaks a different
 # server protocol and the shipped loader refuses to boot it.
 #
 # A unix half loads into the wine loader's own process and has to match its arch. The
@@ -21,12 +21,12 @@ here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/.." && pwd)"
 
 WINE_URL="${WINE_URL:-https://gitlab.winehq.org/wine/wine.git}"
-WINE_TAG="${WINE_TAG:-wine-11.15}"
+WINE_TAG="${WINE_TAG:-wine-11.0}"
 # A shallow clone of a mutable tag records nothing about what it resolved to, so a
 # tag moved upstream would change what gets built here with no signal.
-WINE_COMMIT="${WINE_COMMIT:-2df1ee28039cf84776eb1421ed90bd154cebb65f}"
-WINE_SRC="${WINE_SRC:-$repo/scratch/wine}"
-WINE_BUILD="${WINE_BUILD:-$repo/scratch/wine-build-dual}"
+WINE_COMMIT="${WINE_COMMIT:-db11d0fe6a169c457e23d007e20404643d067aa8}"
+WINE_SRC="${WINE_SRC:-$repo/scratch/wine-11.0}"
+WINE_BUILD="${WINE_BUILD:-$repo/scratch/wine-build-11.0}"
 # i386 is built because a 32 bit game needs the i386 PE halves. freetype and X are
 # off because nothing built here uses either.
 CONFIGURE_OPTS="${CONFIGURE_OPTS:---enable-archs=i386,x86_64 --without-freetype --without-x}"
@@ -35,6 +35,8 @@ HOST="${HOST:-x86_64-apple-darwin}"
 HOST_CPU="${HOST%%-*}"
 HOST_CC="${HOST_CC:-clang -arch x86_64}"
 HOST_CXX="${HOST_CXX:-clang++ -arch x86_64}"
+REGISTER_COMPONENTS_DIFF="${REGISTER_COMPONENTS_DIFF:-$here/register-components-11.0.diff}"
+BUILD_NTDLL="${BUILD_NTDLL:-1}"
 
 # The bison and autoconf macOS ships are too old for wine's configure.
 PATH="/opt/homebrew/bin:/opt/homebrew/opt/bison/bin:/opt/homebrew/opt/autoconf/bin:$PATH"
@@ -70,7 +72,7 @@ if grep -q 'WINE_CONFIG_MAKEFILE(dlls/lsteamclient)' "$WINE_SRC/configure.ac"; t
     echo "==> components already registered with configure"
 else
     echo "==> registering dlls/lsteamclient and programs/steam.exe with configure"
-    ( cd "$WINE_SRC" && git apply "$here/register-components.diff" )
+    ( cd "$WINE_SRC" && git apply "$REGISTER_COMPONENTS_DIFF" )
 fi
 
 "$repo/lsteamclient/fetch.sh"
@@ -106,7 +108,9 @@ fi
 
 # lsteamclient's unix half links against wine's ntdll.so. It is wine's artifact rather
 # than a component's, so it is built here and before the component scripts run.
-if [ -f "$WINE_BUILD/dlls/ntdll/ntdll.so" ]; then
+if [ "$BUILD_NTDLL" = 0 ]; then
+    echo "==> skipping dlls/ntdll/ntdll.so build (BUILD_NTDLL=0)"
+elif [ -f "$WINE_BUILD/dlls/ntdll/ntdll.so" ]; then
     echo "==> dlls/ntdll/ntdll.so already built"
 else
     echo "==> building dlls/ntdll/ntdll.so"

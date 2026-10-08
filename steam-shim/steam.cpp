@@ -42,6 +42,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
+#include "posix_compat.h"
 #define _USE_GNU
 #include <dlfcn.h>
 

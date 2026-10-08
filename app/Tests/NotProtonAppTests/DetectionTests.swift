@@ -63,6 +63,17 @@ struct SupportedRunnerTests {
         #expect(rosetta.displayVersion != fex.displayVersion)
     }
 
+    @Test("CrossOver 26.3 is pinned as a Rosetta build")
+    func crossover263IsSupported() throws {
+        let build = try #require(SupportedRunners.build(id: "26.3.0.39832"))
+
+        #expect(build.releaseVersion == "26.3")
+        #expect(build.flavor == nil)
+        #expect(build.displayVersion == "26.3 Rosetta")
+        #expect(Set(build.cleanNtdll.keys) == [.x86_64Windows, .i386Windows])
+        #expect(SupportedRunners.build(loaderSHA256: build.loaderSHA256) == build)
+    }
+
     // The installed row has only the clone directory name, which is the id.
     @Test("An installed build is named the same way the picked one is")
     func installedBuildsReadBackTheSame() {

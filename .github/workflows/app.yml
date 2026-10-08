@@ -52,10 +52,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            scratch/wine
-            scratch/wine-build-dual
-            scratch/wine-build-arm64
-          key: wine-xcode-27-${{ hashFiles('bridge/setup-wine-tree.sh', 'bridge/register-components.diff') }}
+            scratch/wine-11.0
+            scratch/wine-build-11.0
+            scratch/wine-build-arm64-11.0
+          key: wine-11.0-xcode-${{ hashFiles('bridge/setup-wine-tree.sh', 'bridge/register-components-11.0.diff') }}
 
       - name: Restore Proton tarball cache
         uses: actions/cache@v4
@@ -80,10 +80,10 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            scratch/wine
-            scratch/wine-build-dual
-            scratch/wine-build-arm64
-          key: wine-xcode-27-${{ hashFiles('bridge/setup-wine-tree.sh', 'bridge/register-components.diff') }}
+            scratch/wine-11.0
+            scratch/wine-build-11.0
+            scratch/wine-build-arm64-11.0
+          key: wine-11.0-xcode-${{ hashFiles('bridge/setup-wine-tree.sh', 'bridge/register-components-11.0.diff') }}
 
       - name: Stage the app payload
         run: make app-payload
