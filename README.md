@@ -6,7 +6,7 @@ Wine/Proton components needed by Windows games.
 This fork adds experimental support for **CrossOver 26.3.0.39832** on Apple Silicon using Rosetta.
 It is not affiliated with Valve or CodeWeavers.
 
-[Download NotProton 1.0.3 for CrossOver 26.3](https://github.com/burhanmoin1/NotProton-crossover-26.3/releases/download/v1.0.3/NotProton-1.0.3.dmg)
+[Download NotProton 1.0.3 for CrossOver 26.3](https://github.com/burhanmoin1/NotProton-crossover-26.3/releases/tag/v1.0.3)
 
 ## Compatibility
 
